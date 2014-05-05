@@ -1,4 +1,3 @@
-
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -11,42 +10,11 @@
     <meta name="author" content="Kevin Xu, Charlie Guo" />
     <!-- <link rel="icon" type="image/x-icon" href="graph.png" /> -->
 
-    <!-- Apple Meta Data -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png" />
-
-    <!-- Facebook Meta Data -->
-    <meta property="og:url" content="http://xkcdgraphs.com" />
-    <meta property="og:title" content="Create your own XKCD-style Graphs" />
-    <meta property="og:description" content="Instant XKCD-style Graphs created in Javascript D3 for your enjoyment" />
-    <meta property="og:image" content="http://xkcdgraphs.com/graph.png" />
-    <meta property="og:type" content="website" />
-
     <!-- CSS Files -->
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="style.css" />
 
-    <script type="text/javascript">
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', 'UA-36917714-1']);
-        _gaq.push(['_trackPageview']);
 
-        (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-        })();
-    </script>
-
-    <div id="fb-root"></div>
-    <script>(function(d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) return;
-        js = d.createElement(s); js.id = id;
-        js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=407882832614060";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));</script>
 
 </head>
 <body>
@@ -57,11 +25,13 @@
         <h2>Major credit to <a href="http://dan.iel.fm/xkcd/" target="_blank">Dan Foreman-Mackey</a></h2>
 
         <form>
+            <div class="input">
+                <label for="title">Title</label>
+                <input type="text" id="title" placeholder="Your Graph" value="Your Graph" />
+            </div>
+
+            <div class="clear"></div>
             <div class="left">
-                <div class="input">
-                    <label for="equation">Equation</label>
-                    <input type="text" id="equation" placeholder="x*sin(x)" />
-                </div>
 
                 <div class="input">
                     <label for="xmin">X-minimum</label>
@@ -75,10 +45,6 @@
             </div>
 
             <div class="right">
-                <div class="input">
-                    <label for="title">Title</label>
-                    <input type="text" id="title" placeholder="Your Graph" value="Your Graph" />
-                </div>
 
                 <div class="input">
                     <label for="xlabel">X-label</label>
@@ -91,12 +57,23 @@
                 </div>
             </div>
 
+
             <div class="clear"></div>
-            <label for="slider" class="slider">Refinement</label>
-            <div id="slider"></div>
-            <span id="more">+</span>
 
             <div class="left">
+                <div class="input">
+                    <label for="equation">Equation</label>
+                    <input type="text" id="equation" placeholder="x*sin(x)" />
+                </div>
+                <div class="input">
+                    <label for="equation3" class="equation3">Equation 3</label>
+                    <input type="text" id="equation3" class="equation3" placeholder="sqrt(x*10)" />
+                </div>
+
+                <div class="input">
+                    <label for="equation5" class="equation5">Equation 5</label>
+                    <input type="text" id="equation5" class="equation5" placeholder="abs(x)" />
+                </div>
                 <div class="input">
                     <label for="equation2" class="equation2">Equation 2</label>
                     <input type="text" id="equation2" class="equation2" placeholder="x^2" />
@@ -108,19 +85,14 @@
                 </div>
             </div>
 
-            <div class="right">
-                <div class="input">
-                    <label for="equation3" class="equation3">Equation 3</label>
-                    <input type="text" id="equation3" class="equation3" placeholder="sqrt(x*10)" />
-                </div>
 
-                <div class="input">
-                    <label for="equation5" class="equation5">Equation 5</label>
-                    <input type="text" id="equation5" class="equation5" placeholder="abs(x)" />
-                </div>
+            <div class="right">
+
             </div>
 
             <div class="clear"></div>
+
+            <span id="more">More Equation</span>
         </form>
     </div>
 
@@ -129,21 +101,17 @@
 
     <footer class="container">
 
-        <div class="social">
-            <div class="fb-like" data-href="http://xkcdgraphs.com/" data-send="true" data-layout="button_count" data-width="450" data-show-faces="true"></div>
-            <a href="https://twitter.com/share" class="twitter-share-button" data-text="Create your own XKCD-style Graphs instantly" data-via="imkevinxu">Tweet</a>
-<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-        </div>
-
         <div class="credit">
             <a href="https://twitter.com/charlierguo" target="_blank">@charlierguo</a>
             &nbsp;
             <a href="http://twitter.com/imkevinxu" target="_blank">@imkevinxu</a>
+            &nbsp;
+            <a href="http://twitter.com/bomadeno" target="_blank">@bomadeno</a>
         </div>
 
     </footer>
 
-    <a href="https://github.com/imkevinxu/xkcdgraphs" target="_blank">
+    <a href="https://github.com/bomadeno/xkcdgraphs" target="_blank">
         <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub">
     </a>
 
@@ -154,14 +122,11 @@
     <script src="xkcd.js"></script>
     <script src="examples.js"></script>
     <script src="parser.js"></script>
+
     <script type="text/javascript">
 
         $(document).ready(function() {
             $('#equation').focus();
-            $("#slider").slider({ min: 1, max: 250, value: 100 });
-            $("#slider").on("slide", function() {
-                drawGraph();
-            });
             $('input').on('textchange', function () {
                 drawGraph();
             });
@@ -188,7 +153,7 @@
                 var expression = string_eval($(equation).val()),
                     xmin = parseInt($('#xmin').val()),
                     xmax = parseInt($('#xmax').val()),
-                    N = $("#slider").slider( "option", "value");
+                    N = 100;
 
                 if (expression != "'Invalid function'" && !isNaN(xmin) && !isNaN(xmax) && xmin < xmax) {
 

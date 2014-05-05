@@ -127,15 +127,12 @@ label.slider {
 }
 
 span#more {
-    width: 24px;
-    height: 24px;
     right: -8px;
     top: -7px;
     display: inline-block;
     position: relative;
     border: 1px solid #999;
     font-size: 20px;
-    font-family: "Helvetica", "Arial";
     text-align: center;
 }
 
