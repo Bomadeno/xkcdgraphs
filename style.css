@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: "xkcd";
-    src: url('http://antiyawn.com/uploads/Humor-Sans.ttf');
+    src: url('http://simonsoftware.se/other/xkcd.ttf');
 }
 
 body {
@@ -142,13 +142,14 @@ span#more:hover, span#more:active {
     cursor: pointer;
 }
 
-.equation2, .equation3,
-.equation4, .equation5 {
-    display: none;
-}
 
 text.title {
     font-size: 20px;
+}
+
+.anotherEquation
+{
+    display: none;
 }
 
 path {

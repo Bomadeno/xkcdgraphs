@@ -60,35 +60,10 @@
 
             <div class="clear"></div>
 
-            <div class="left">
-                <div class="input">
-                    <label for="equation">Equation</label>
-                    <input type="text" id="equation" placeholder="x*sin(x)" />
-                </div>
-                <div class="input">
-                    <label for="equation3" class="equation3">Equation 3</label>
-                    <input type="text" id="equation3" class="equation3" placeholder="sqrt(x*10)" />
-                </div>
-
-                <div class="input">
-                    <label for="equation5" class="equation5">Equation 5</label>
-                    <input type="text" id="equation5" class="equation5" placeholder="abs(x)" />
-                </div>
-                <div class="input">
-                    <label for="equation2" class="equation2">Equation 2</label>
-                    <input type="text" id="equation2" class="equation2" placeholder="x^2" />
-                </div>
-
-                <div class="input">
-                    <label for="equation4" class="equation4">Equation 4</label>
-                    <input type="text" id="equation4" class="equation4" placeholder="1/tan(x)" />
-                </div>
+            <div id="equationHolder">
+                <div class="input anotherEquation" style="display: inline-block"><label>Equation</label><input type="text" class="theEquation" placeholder="x*sin(x)" /> <button class="removeButton" type="button" disabled>Remove</button> </div>
             </div>
 
-
-            <div class="right">
-
-            </div>
 
             <div class="clear"></div>
 
@@ -126,31 +101,54 @@
     <script type="text/javascript">
 
         $(document).ready(function() {
+            var sampleStrings = ["x*sin(x)", "sqrt(x*10)","abs(x)","x^2","1/tan(x)"];
+            var colorsArray =  ['steelBlue', 'red', 'green', 'purple', 'gray'];
             $('#equation').focus();
-            $('input').on('textchange', function () {
+            $(document).keyup(function () {
                 drawGraph();
             });
             $('#more').on('click', function() {
-                if ($(".equation4").css("display") === "inline-block") $(".equation5").fadeIn();
-                if ($(".equation3").css("display") === "inline-block") $(".equation4").fadeIn();
-                if ($(".equation2").css("display") === "inline-block") $(".equation3").fadeIn();
-                $(".equation2").fadeIn();
+
+                var newEq = $("<div class=\"input anotherEquation\"><label>Equation</label><input type=\"text\" class=\"theEquation\" placeholder=\"x*sin(x)\" /> <button class=\"removeButton\" type=\"button\">Remove</button> </div>");
+                $("#equationHolder").append(newEq);
+                newEq.fadeIn().css("display","inline-block");;
+
+                updateRemoveButtons();
             });
+
+            $("#equationHolder").on("click", ".removeButton", function(){
+                $(this).closest(".anotherEquation").fadeOut(300,function(){
+                    $(this).closest(".anotherEquation").remove();
+                    drawGraph();
+
+                    updateRemoveButtons();
+                });
+            });
+
+            function updateRemoveButtons()
+            {
+                var removeButtons = $('.removeButton');
+                if(removeButtons.length > 1){
+                    removeButtons.prop('disabled', false);
+                }   else{
+                    removeButtons.prop('disabled', true);
+                }
+            }
 
             function drawGraph() {
                 var plot = xkcdplot();
-                drawGraphEquation(plot, '#equation');
-                if ($("#equation2").val()) drawGraphEquation(plot, '#equation2', 'red');
-                if ($("#equation3").val()) drawGraphEquation(plot, '#equation3', 'green');
-                if ($("#equation4").val()) drawGraphEquation(plot, '#equation4', 'purple');
-                if ($("#equation5").val()) drawGraphEquation(plot, '#equation5', 'gray');
+
+                $("#equationHolder").find(".theEquation").each(function(index){
+                    //console.log(index +": " + $(this).val());
+                    if ($(this).val()) drawGraphEquation(plot, $(this), colorsArray[index % colorsArray.length]);
+                });
             }
 
             function drawGraphEquation(plot, equation, color) {
                 $("#plot").empty();
                 if (!color) color = "steelBlue";
 
-                var expression = string_eval($(equation).val()),
+                var expression = string_eval(equation.val()),
                     xmin = parseInt($('#xmin').val()),
                     xmax = parseInt($('#xmax').val()),
                     N = 100;
@@ -203,11 +201,11 @@
                         }
                     }
 
-                    console.log("[Graph Equation] " + $('#equation').val());
+                    console.log("[Graph Equation] " + equation.val());
                     console.log("[JS Expression] " + expression);
                 } else {
                     $("#plot").append("<h1>Sorry, invalid function</h1>");
-                    console.log("[Invalid Function] " + $('#equation').val());
+                    console.log("[Invalid Function] " + equation.val());
                 }
             }
 
