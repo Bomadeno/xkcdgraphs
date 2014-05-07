@@ -93,7 +93,6 @@ input {
     width: 135px;
     height: 24px;
     font-size: 18px;
-    font-family: "xkcd";
     padding: 2px 5px;
     border: 1px solid #999;
 }
@@ -102,6 +101,11 @@ label.slider {
     top: -9px;
     position: relative;
     padding-left: 30px;
+}
+
+.linkTitle
+{
+    color: black;
 }
 
 #slider {
@@ -150,6 +154,11 @@ text.title {
 .anotherEquation
 {
     display: none;
+}
+
+.faultyError
+{
+    color: #ff0000;
 }
 
 path {

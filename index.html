@@ -34,6 +34,11 @@
             <div class="left">
 
                 <div class="input">
+                    <label for="xlabel">X-label</label>
+                    <input type="text" id="xlabel" placeholder="X" value="X" />
+                </div>
+
+                <div class="input">
                     <label for="xmin">X-minimum</label>
                     <input type="text" id="xmin" placeholder="-10" value="-10" />
                 </div>
@@ -47,13 +52,18 @@
             <div class="right">
 
                 <div class="input">
-                    <label for="xlabel">X-label</label>
-                    <input type="text" id="xlabel" placeholder="X" value="X" />
+                    <label for="ylabel">Y-label</label>
+                    <input type="text" id="ylabel" placeholder="Y" value="Y" />
                 </div>
 
                 <div class="input">
-                    <label for="ylabel">Y-label</label>
-                    <input type="text" id="ylabel" placeholder="Y" value="Y" />
+                    <label for="ymin">Y-minimum</label>
+                    <input type="text" id="ymin" placeholder="-10" value="" />
+                </div>
+
+                <div class="input">
+                    <label for="ymax">Y-maximum</label>
+                    <input type="text" id="ymax" placeholder="10" value="" />
                 </div>
             </div>
 
@@ -61,7 +71,7 @@
             <div class="clear"></div>
 
             <div id="equationHolder">
-                <div class="input anotherEquation" style="display: inline-block"><label>Equation</label><input type="text" class="theEquation" placeholder="x*sin(x)" /> <button class="removeButton" type="button" disabled>Remove</button> </div>
+                <div class="input anotherEquation" style="display: block"><label>Equation</label><input type="text" class="theEquation" placeholder="x*sin(x)" /> <button class="removeButton" type="button" disabled>Remove</button> </div>
             </div>
 
 
@@ -103,21 +113,21 @@
         $(document).ready(function() {
             var sampleStrings = ["x*sin(x)", "sqrt(x*10)","abs(x)","x^2","1/tan(x)"];
             var colorsArray =  ['steelBlue', 'red', 'green', 'purple', 'gray'];
-            $('#equation').focus();
-            $(document).keyup(function () {
-                drawGraph();
-            });
-            $('#more').on('click', function() {
 
+            $('#equation').focus();
+
+            $(document).keyup(drawGraph);
+
+            $('#more').on('click', function() {
                 var newEq = $("<div class=\"input anotherEquation\"><label>Equation</label><input type=\"text\" class=\"theEquation\" placeholder=\"x*sin(x)\" /> <button class=\"removeButton\" type=\"button\">Remove</button> </div>");
                 $("#equationHolder").append(newEq);
-                newEq.fadeIn().css("display","inline-block");;
+                newEq.slideDown();
 
                 updateRemoveButtons();
             });
 
             $("#equationHolder").on("click", ".removeButton", function(){
-                $(this).closest(".anotherEquation").fadeOut(300,function(){
+                $(this).closest(".anotherEquation").slideUp(300,function(){
                     $(this).closest(".anotherEquation").remove();
                     drawGraph();
 
@@ -125,8 +135,7 @@
                 });
             });
 
-            function updateRemoveButtons()
-            {
+            function updateRemoveButtons(){
                 var removeButtons = $('.removeButton');
                 if(removeButtons.length > 1){
                     removeButtons.prop('disabled', false);
@@ -135,28 +144,108 @@
                 }
             }
 
+            var parameters;
+
             function drawGraph() {
                 var plot = xkcdplot();
 
+                var xmin = parseInt($('#xmin').val());
+                var xmax = parseInt($('#xmax').val());
+                var ymin = parseInt($("#ymin").val());
+                var ymax = parseInt($("#ymax").val());
+
+                var tempXMin = xmin - (xmax - xmin) / 16;
+                var tempXMax = xmax + (xmax - xmin) / 16;
+
+                var invalidFunctionCount = 0;
+                var isAtLeastOneValidFunction = false;
+
+                parameters = {  title: $('#title').val(),
+                    xlabel: $('#xlabel').val(),
+                    ylabel: $('#ylabel').val(),
+                    xlim: [tempXMin, tempXMax]};
+
+                if( !isNaN(ymin) || !isNaN(ymax) ) {
+                    if (isNaN(ymin))
+                        ymin = -1;
+                    if (isNaN(ymax))
+                        ymax = 1;
+
+                    parameters["ylim"] = [ymin, ymax];
+                }
+                //clear image space
+                $("#plot").empty();
+
                 $("#equationHolder").find(".theEquation").each(function(index){
-                    //console.log(index +": " + $(this).val());
-                    if ($(this).val()) drawGraphEquation(plot, $(this), colorsArray[index % colorsArray.length]);
+                    var allGood = true; //blank functions aren't errors
+                    var equation = $(this).val();
+
+                    if ($(this).val()) allGood = drawGraphEquation(plot, equation, colorsArray[index % colorsArray.length]);
+                    if(!allGood)
+                    {
+                        //todo try to draw JS expression instead
+                        try {
+                            drawJSGraphEquation(plot, equation, colorsArray[index % colorsArray.length]);
+                            $(this).removeClass("faultyError");
+                            isAtLeastOneValidFunction = true;
+                        } catch (e) {
+                            if (e instanceof SyntaxError) {
+                                $(this).addClass("faultyError");
+                                console.log("[Invalid JS Expression] " + equation);
+                                invalidFunctionCount++;
+                            }
+                        }
+                    } else
+                    {
+                        $(this).removeClass("faultyError");
+                        isAtLeastOneValidFunction = true;
+                    }
                 });
+
+                if(isAtLeastOneValidFunction) {
+                    plot("#plot", parameters);
+                    plot.draw();
+                }
+
+                if(invalidFunctionCount == 1) {
+                    $("#plot").append("<h1 class='faultyError'>There's an invalid function</h1>");
+                }
+                else if(invalidFunctionCount > 1)
+                {
+                    $("#plot").append("<h1 class='faultyError'>There are "+invalidFunctionCount+" invalid functions</h1>");
+                }
+
+
             }
 
             function drawGraphEquation(plot, equation, color) {
-                $("#plot").empty();
+
+                var jsExpression = string_eval(equation);
+                var allGood = drawJSGraphEquation(plot, jsExpression, color);
+
+                if(allGood){
+                    console.log("[Graph Equation] " + equation);
+                    return true;
+                } else {
+                    console.log("[Invalid Function] " + equation);
+                    return false;
+                }
+            }
+
+            function drawJSGraphEquation(plot, jsExpression, color) {
                 if (!color) color = "steelBlue";
 
-                var expression = string_eval(equation.val()),
-                    xmin = parseInt($('#xmin').val()),
-                    xmax = parseInt($('#xmax').val()),
-                    N = 100;
+                var xmin = parseInt($('#xmin').val());
+                var xmax = parseInt($('#xmax').val());
 
-                if (expression != "'Invalid function'" && !isNaN(xmin) && !isNaN(xmax) && xmin < xmax) {
+
+
+                var N = 100;
+
+                if (jsExpression != "'Invalid function'" && !isNaN(xmin) && !isNaN(xmax) && xmin < xmax) {
 
                     function f(d) {
-                        current_expression = expression.split("-x").join(-d);
+                        current_expression = jsExpression.split("-x").join(-d);
                         var result = eval(current_expression.split("x").join(d));
                         if (isNaN(result)) {
                             return 0;
@@ -170,30 +259,14 @@
                     }
 
                     var data = d3.range(xmin, xmax, (xmax - xmin) / N).map(function (d) {
-                            return {x: d, y: f(d)};
-                        });
+                        return {x: d, y: f(d)};
+                    });
 
-                    var parameters = {  title: $('#title').val(),
-                                        xlabel: $('#xlabel').val(),
-                                        ylabel: $('#ylabel').val(),
-                                        xlim: [xmin - (xmax - xmin) / 16, xmax + (xmax - xmin) / 16] };
-
-                    if (expression.indexOf("x") < 0) {
-                        if (eval(expression) < -10) {
-                            parameters["ylim"] = [eval(expression), 10];
-                        } else if (eval(expression) > 10) {
-                            parameters["ylim"] = [-10, eval(expression)];
-                        } else {
-                            parameters["ylim"] = [-10, 10];
-                        }
-                    }
-
-                    plot("#plot", parameters);
+                    //draw on the plot
                     plot.plot(data, {stroke: color});
-                    plot.draw();
 
                     for (var i = xmin; i < xmax; i++) {
-                        current_expression = expression.split("-x").join(-i);
+                        current_expression = jsExpression.split("-x").join(-i);
                         var result = eval(current_expression.split("x").join(i));
                         if (isNaN(result) || result === Infinity) {
                             $("#plot").append("<h1>Some part of the equation is invalid along the domain you chose</h1>");
@@ -201,11 +274,11 @@
                         }
                     }
 
-                    console.log("[Graph Equation] " + equation.val());
-                    console.log("[JS Expression] " + expression);
+                    console.log("[JS Expression] " + jsExpression);
+                    return true;
                 } else {
-                    $("#plot").append("<h1>Sorry, invalid function</h1>");
-                    console.log("[Invalid Function] " + equation.val());
+                    console.log("[Invalid Expression] " + jsExpression);
+                    return false;
                 }
             }
 
