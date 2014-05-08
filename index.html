@@ -13,7 +13,7 @@
     <!-- CSS Files -->
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="style.css" />
-
+    <link rel='stylesheet' href='spectrum.css' />
 
 
 </head>
@@ -22,6 +22,8 @@
     <div class="container">
 
         <h1>Create your own XKCD-style Graphs</h1>
+		<h2>Based on <a href="http://xkcdgraphs.com/" target="_blank">xkcdgraphs.com</a></h2>
+        <p>(changes: also allows javascript functions, unlimited functions + misc tweaks)</p>
         <h2>Major credit to <a href="http://dan.iel.fm/xkcd/" target="_blank">Dan Foreman-Mackey</a></h2>
 
         <form>
@@ -71,17 +73,23 @@
             <div class="clear"></div>
 
             <div id="equationHolder">
-                <div class="input anotherEquation" style="display: block"><label>Equation</label><input type="text" class="theEquation" placeholder="x*sin(x)" /> <button class="removeButton" type="button" disabled>Remove</button> </div>
+                <div class="input anotherEquation" style="display: block">
+                    <label>Equation</label>
+                    <input type="text" class="theEquation" placeholder="x*sin(x)" />
+                    <label>Color</label>
+                    <input type='text' class='spectrumPicker' value='red' />
+                    <button class="removeButton" type="button" disabled>Remove</button>
+                </div>
             </div>
 
 
             <div class="clear"></div>
 
-            <span id="more">More Equation</span>
+            <span id="more">++Add another equation++</span>
         </form>
     </div>
 
-    <div id="plot"></div>
+    <div id="plot"><p>Your plot will go here!</p></div>
     <div id="examples"></div>
 
     <footer class="container">
@@ -100,6 +108,16 @@
         <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub">
     </a>
 
+    <div>
+        <div style="position: absolute; left: 0; top: 100px; display: block">
+            <p>Advanced</p>
+            <ul id="sidebar-nav" class="nav nav-list">
+                <li><a href="#" id="toggleXKCD">Toggle XKCD font</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
     <script src="http://d3js.org/d3.v2.min.js"></script>
@@ -108,23 +126,41 @@
     <script src="examples.js"></script>
     <script src="parser.js"></script>
 
+    <script src='spectrum.js'></script>
+
     <script type="text/javascript">
 
         $(document).ready(function() {
             var sampleStrings = ["x*sin(x)", "sqrt(x*10)","abs(x)","x^2","1/tan(x)"];
             var colorsArray =  ['steelBlue', 'red', 'green', 'purple', 'gray'];
 
+            var spectrumArgs = {
+                showButtons: false,
+                showPalette: true,
+                palette: colorsArray,
+                localStorageKey: "bomadenoxkcd.spectrumpalette",
+                change: drawGraph
+            }
+
             $('#equation').focus();
 
             $(document).keyup(drawGraph);
 
             $('#more').on('click', function() {
-                var newEq = $("<div class=\"input anotherEquation\"><label>Equation</label><input type=\"text\" class=\"theEquation\" placeholder=\"x*sin(x)\" /> <button class=\"removeButton\" type=\"button\">Remove</button> </div>");
+                var newEq = $("<div class=\"input anotherEquation\">" +
+                        "<label>Equation</label><input type=\"text\" class=\"theEquation\" placeholder=\"x*sin(x)\" /> " +
+                        "<label>Color</label>" +
+                        "<input type='text' class='spectrumPicker' value='red' />"+
+                        "<button class=\"removeButton\" type=\"button\">Remove</button> </div>");
                 $("#equationHolder").append(newEq);
-                newEq.slideDown();
+                newEq.slideDown(300, function(){
+                    newEq.find('.spectrumPicker').spectrum(spectrumArgs);
+                });
 
                 updateRemoveButtons();
             });
+
+
 
             $("#equationHolder").on("click", ".removeButton", function(){
                 $(this).closest(".anotherEquation").slideUp(300,function(){
@@ -133,6 +169,23 @@
 
                     updateRemoveButtons();
                 });
+            });
+
+
+            $('.spectrumPicker').spectrum(spectrumArgs);
+
+            var xkcdFontOn = true;
+            $('#toggleXKCD').on('click', function(){
+                if(xkcdFontOn)
+                {
+                    $("body").css('font-family','inherit');
+                    $("body").css('font-family','sans-serif');
+                    xkcdFontOn = false;
+                }
+                else {
+                    $("body").css('font-family', 'xkcd');
+                    xkcdFontOn = true;
+                }
             });
 
             function updateRemoveButtons(){
@@ -145,6 +198,11 @@
             }
 
             var parameters;
+
+            function getAColor(seed)
+            {
+                return colorsArray[seed % colorsArray.length];
+            }
 
             function drawGraph() {
                 var plot = xkcdplot();
@@ -173,19 +231,21 @@
 
                     parameters["ylim"] = [ymin, ymax];
                 }
-                //clear image space
+                //empty plot holder div
                 $("#plot").empty();
 
                 $("#equationHolder").find(".theEquation").each(function(index){
                     var allGood = true; //blank functions aren't errors
                     var equation = $(this).val();
+                    var color = $(this).closest(".anotherEquation").find(".spectrumPicker").spectrum("get");
+                    console.log(index + "color: " + color);
 
-                    if ($(this).val()) allGood = drawGraphEquation(plot, equation, colorsArray[index % colorsArray.length]);
+                    if ($(this).val()) allGood = drawGraphEquation(plot, equation, color);
                     if(!allGood)
                     {
                         //todo try to draw JS expression instead
                         try {
-                            drawJSGraphEquation(plot, equation, colorsArray[index % colorsArray.length]);
+                            drawJSGraphEquation(plot, equation, color);
                             $(this).removeClass("faultyError");
                             isAtLeastOneValidFunction = true;
                         } catch (e) {
